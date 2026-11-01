@@ -1,4 +1,3 @@
-cat << 'EOF' > setup.sh
 #!/bin/bash
 set -e
 
@@ -74,6 +73,4 @@ echo "✅ Installation erfolgreich abgeschlossen!"
 echo "Starte DeX / externer Monitor: ./desktop"
 echo "Starte Tablet- / Phone-Display: ./mobile"
 echo "===================================================="
-EOF
 
-chmod +x setup.sh
