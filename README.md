@@ -9,7 +9,6 @@ Quick Start (One-Line Installer)
 
 Ensure you have installed **Termux** (from F-Droid or GitHub Releases, *not* Google Play), then run:
 
-```text
 pkg update -y && pkg install curl -y && curl -sL [https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/setup.sh](https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/setup.sh) | bash
 
 Key Advantages Over Traditional MethodsDebian 13 (Trixie): 
@@ -53,21 +52,24 @@ Note: The --test-type flag suppresses the standard --no-sandbox yellow warning b
 
 Contributing Feel free to open issues or submit pull requests if you find ways to further optimize the PRoot syscall overhead or improve hardware acceleration routing.
 
-## 🎯 Scope & Support Policy
+Scope & Support Policy
 
 This project is an opinionated proof-of-concept and deployment blueprint designed to demonstrate true desktop replacement capabilities on **modern flagship mobile hardware**. 
 
-### Hardware Baseline
+Hardware Baseline
+
 * **SoC:** Modern ARM64 flagship architecture (Snapdragon 8 Gen series or equivalent).
 * **RAM:** Minimum 12 GB (16 GB strongly recommended for multitasking).
 * **Storage:** UFS 3.1 / UFS 4.0 storage (PRoot container performance scales heavily with random I/O).
 
-### ⚠️ Non-Negotiable Support Boundaries
+Non-Negotiable Support Boundaries
+
 * **No Legacy / Budget Device Support:** We will not triage, optimize, or provide personal troubleshooting for low-tier, budget, or legacy hardware. Issues regarding performance drops on sub-spec hardware will be closed without debate.
 * **Debian 13 (Trixie) Only:** This repository focuses strictly on a hardened, stable Debian baseline. Requests to port or debug alternate distributions (Ubuntu, Arch, Kali, etc.) are out of scope. If you want a different distro, feel free to fork the codebase.
 * **Not a General Help Desk:** GitHub Issues are strictly reserved for reproducible bugs in the deployment script and environment architecture—not general Linux command-line tutoring.
 
-### 🚀 High-Impact Contributions Welcome
+High-Impact Contributions Welcome
+
 Pull requests and technical discussions are explicitly encouraged around:
 1. **Hardware-Accelerated Rendering (GPU):** Integrating Mesa Turnip/Zink (Vulkan-to-OpenGL translation) or `virglrenderer` bridges to offload desktop rendering from the CPU to the Adreno GPU.
 2. **PRoot Overhead Reduction:** Syscall filtering, seccomp optimizations, and native IO speedups.
