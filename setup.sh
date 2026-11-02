@@ -14,7 +14,7 @@ pkg update -y
 pkg install x11-repo -y
 pkg install termux-x11-nightly pulseaudio proot-distro -y
 
-echo "[2/5] Installiere sauberes Debian 12 (Bookworm)..."
+echo "[2/5] Installiere Debian 13 (Trixie / Current)..."
 proot-distro install debian
 
 echo "[3/5] Installiere XFCE4 & Produktivitäts-Apps (ohne Plank)..."
