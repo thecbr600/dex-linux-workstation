@@ -5,6 +5,13 @@ No VNC, no root required, and full audio support.Tested and optimized for the Sa
 
 🎥 Video ProofWatch the Unedited Screen Capture on YouTube --> https://www.youtube.com/watch?v=_Ej4hRKVolw  (Demonstrates a cold boot from the Termux terminal, live YouTube music streaming via Chromium, and multitasking with GIMP and LibreOffice at 60 FPS)
 
+## ⚡ Quick Start (One-Line Installer)
+
+Ensure you have installed **Termux** (from F-Droid or GitHub Releases, *not* Google Play), then run:
+
+```bash
+pkg update -y && pkg install curl -y && curl -sL [https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/setup.sh](https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/setup.sh) | bash
+
 🚀 Key Advantages Over Traditional MethodsDebian 13 (Trixie): 
 Built on the modern testing branch. This offers up-to-date packages and security standards, moving past the aging Debian 11/12 builds typically found in mobile setups.
 Termux-X11 Display Server: We bypass VNC completely. Termux-X11 renders directly using Android's native graphics layers, eliminating input lag and choppy frame rates.PulseAudio TCP Bridge: Sound works out-of-the-box via a local network bridge, allowing synchronized audio playback in browser and desktop apps.
