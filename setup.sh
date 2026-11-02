@@ -31,8 +31,35 @@ echo "{\"CommandLineFlagSecurityWarningsEnabled\": false}" > /etc/chromium/polic
 cp /etc/chromium/policies/managed/hide_warning.json /etc/chromium-browser/policies/managed/hide_warning.json
 '
 
-# Chromium CPU rendering wrapper setup
-proot-distro login debian -- bash -c 'if [ ! -f /usr/bin/chromium.real ]; then mv /usr/bin/chromium /usr/bin/chromium.real; fi && echo -e "#!/bin/bash\nexec /usr/bin/chromium.real --no-sandbox --disable-gpu --disable-software-rasterizer --disable-dev-shm-usage \"\$@\"" > /usr/bin/chromium && chmod +x /usr/bin/chromium'
+# High-Performance Chromium Wrapper Script
+proot-distro login debian -- bash -c '
+if [ ! -f /usr/bin/chromium.real ]; then
+    mv /usr/bin/chromium /usr/bin/chromium.real
+fi
+
+cat << "EOF" > /usr/bin/chromium
+#!/bin/bash
+exec /usr/bin/chromium.real \
+  --no-sandbox \
+  --test-type \
+  --disable-dev-shm-usage \
+  --ozone-platform=x11 \
+  --disable-gpu \
+  --disable-software-rasterizer \
+  --no-default-browser-check \
+  --disable-background-networking \
+  --disable-component-update \
+  --disable-pings \
+  --media-router=0 \
+  --renderer-process-limit=2 \
+  --js-flags="--max-old-space-size=512" \
+  --disk-cache-size=1048576 \
+  --media-cache-size=1048576 \
+  "$@"
+EOF
+
+chmod +x /usr/bin/chromium
+'
 
 echo "[5/5] Generating launch scripts with lockfile cleanup..."
 
