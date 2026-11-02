@@ -5,7 +5,7 @@ No VNC, no root required, and full audio support.Tested and optimized for the Sa
 
 🎥 Video ProofWatch the Unedited Screen Capture on YouTube --> https://www.youtube.com/watch?v=_Ej4hRKVolw  (Demonstrates a cold boot from the Termux terminal, live YouTube music streaming via Chromium, and multitasking with GIMP and LibreOffice at 60 FPS)
 
-## ⚡ Quick Start (One-Line Installer)
+⚡ Quick Start (One-Line Installer)
 
 Ensure you have installed **Termux** (from F-Droid or GitHub Releases, *not* Google Play), then run:
 
