@@ -25,7 +25,8 @@ Display ProtocolTermux-X11 / XFCE4
 Audio RoutingPulseAudio (TCP Module)
 
 Core Implementation Details 
-1. Audio Routing via TCPTo get native sound from the PRoot container to the Android host, we use a TCP bridge in Termux before booting the container:pulseaudio --start --load="module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1" --exit-idle-time=-1
+
+Audio Routing via TCPTo get native sound from the PRoot container to the Android host, we use a TCP bridge in Termux before booting the container:pulseaudio --start --load="module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1" --exit-idle-time=-1
 
 Inside Debian, the PULSE_SERVER environment variable is simply set to 127.0.0.1.2. Chromium Wrapper Script (Hardware & RAM Optimization)Running Chromium in a PRoot container typically results in sandbox crashes or massive memory leaks. 
 We utilize a custom wrapper located at /usr/local/bin/chromium to intercept the standard XFCE menu shortcut. 
