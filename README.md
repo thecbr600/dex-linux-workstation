@@ -1,9 +1,11 @@
+proof of concept video here:
+
+https://youtu.be/3X4EliaiAoY?is=9dkTdEM-_ZWulJTe
+
 Dex-Linux-Workstation
 
 A robust, low-latency Debian 13 (Trixie) desktop environment running natively on Android via Termux, PRoot, and Termux-X11. 
 No VNC, no root required, and full audio support.Tested and optimized for the Samsung Galaxy S26 Ultra (16GB RAM), this project demonstrates a seamless, hardware-accelerated Linux desktop experience—achieving what the defunct official Linux on DeX project originally promised.
-
-Video ProofWatch the Unedited Screen Capture on YouTube --> https://www.youtube.com/watch?v=_Ej4hRKVolw  (Demonstrates a cold boot from the Termux terminal, live YouTube music streaming via Chromium, and multitasking with GIMP and LibreOffice at 60 FPS)
 
 Quick Start (One-Line Installer)
 
@@ -75,3 +77,22 @@ Pull requests and technical discussions are explicitly encouraged around:
 1. **Hardware-Accelerated Rendering (GPU):** Integrating Mesa Turnip/Zink (Vulkan-to-OpenGL translation) or `virglrenderer` bridges to offload desktop rendering from the CPU to the Adreno GPU.
 2. **PRoot Overhead Reduction:** Syscall filtering, seccomp optimizations, and native IO speedups.
 3. **Background Storage Sync:** Native, low-overhead sync routines (e.g., automated `rclone bisync` daemon configurations).
+
+## ⚠️ Crucial Step: Disable Android Child Process Restrictions
+
+Starting with Android 12, Google enforces an aggressive **Phantom Process Killer** that limits background child processes to a maximum of 32. Heavy multitasking (multiple Chromium tabs, compilers, background services) will inevitably trigger this kill-switch if left unconfigured.
+
+To ensure permanent container stability, disable this limit:
+
+### Method 1: Developer Options (Recommended for One UI)
+1. Navigate to **Settings** > **Developer options**.
+2. Scroll to the **Apps** section.
+3. Enable **Disable child process restrictions**.
+4. Set the **Battery** usage for both **Termux** and **Termux-X11** to **Unrestricted**.
+
+### Method 2: ADB Shell (One-time command)
+If the toggle is not visible on your build, run this command once via ADB:
+
+```bash
+adb shell "/system/bin/device_config put activity_manager max_phantom_processes 2147483647"
+adb shell settings put global settings_enable_monitor_phantom_procs false
