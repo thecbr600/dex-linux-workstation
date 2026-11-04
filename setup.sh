@@ -31,10 +31,13 @@ echo "{\"CommandLineFlagSecurityWarningsEnabled\": false}" > /etc/chromium/polic
 cp /etc/chromium/policies/managed/hide_warning.json /etc/chromium-browser/policies/managed/hide_warning.json
 '
 
-# High-Performance Chromium Wrapper Script
+# High-Performance Chromium Wrapper Script (apt-upgrade protected via dpkg-divert)
 proot-distro login debian -- bash -c '
-if [ ! -f /usr/bin/chromium.real ]; then
-    mv /usr/bin/chromium /usr/bin/chromium.real
+# Safely register diversion without breaking existing files
+if [ -f /usr/bin/chromium.real ]; then
+    dpkg-divert --add --divert /usr/bin/chromium.real /usr/bin/chromium 2>/dev/null || true
+else
+    dpkg-divert --add --rename --divert /usr/bin/chromium.real /usr/bin/chromium
 fi
 
 cat << "EOF" > /usr/bin/chromium
@@ -59,6 +62,11 @@ exec /usr/bin/chromium.real \
 EOF
 
 chmod +x /usr/bin/chromium
+
+# Desktop icon & CLI alias linking
+ln -sf /usr/bin/chromium /usr/local/bin/chrome
+ln -sf /usr/bin/chromium /usr/local/bin/chromium
+sed -i "s|Exec=chromium|Exec=/usr/bin/chromium|g" /usr/share/applications/*chromium*.desktop 2>/dev/null || true
 '
 
 echo "[5/5] Generating launch scripts with lockfile cleanup..."
@@ -100,3 +108,4 @@ echo "✅ Setup finished successfully!"
 echo "Run for DeX / External Monitor: ./desktop"
 echo "Run for Mobile / Tablet Screen: ./mobile"
 echo "===================================================="
+  
