@@ -108,4 +108,7 @@ echo "✅ Setup finished successfully!"
 echo "Run for DeX / External Monitor: ./desktop"
 echo "Run for Mobile / Tablet Screen: ./mobile"
 echo "===================================================="
-  
+echo ""
+echo -e "⭐ If this project helped you, please consider giving it a star on GitHub:"
+echo -e "   \033[1;34mhttps://github.com/thecbr600/dex-linux-workstation\033[0m"
+echo ""
