@@ -15,7 +15,7 @@ pkg update -y && pkg install curl -y && curl -sL [https://raw.githubusercontent.
 
 for Adreno GPU use this line as a add on:
 
-curl -sSL https://raw.githubusercontent.com/thecbr600/dex-linux/main/addons/install-gpu.sh | bash
+curl -sSL https://raw.githubusercontent.com/thecbr600/dex-linux/main/addon/install-gpu.sh | bash
 
 Key Advantages Over Traditional MethodsDebian 13 (Trixie): 
 Built on the modern testing branch. This offers up-to-date packages and security standards, moving past the aging Debian 11/12 builds typically found in mobile setups.
