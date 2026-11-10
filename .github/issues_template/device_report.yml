@@ -1,0 +1,51 @@
+name: "📱 Hardware Compatibility Report"
+description: "Submit benchmark results and stability verification for your device"
+title: "[Device]: "
+labels: ["device-report", "verified-hardware"]
+body:
+  - type: markdown
+    attributes:
+      value: "Vielen Dank für das Testen des Stacks! Bitte fülle die folgenden Felder aus, damit wir dein Gerät in die offizielle Kompatibilitätstabelle aufnehmen können."
+  - type: input
+    id: device_model
+    attributes:
+      label: "Device Model"
+      placeholder: "z. B. Samsung Galaxy S24 Ultra / Tab S9"
+    validations:
+      required: true
+  - type: input
+    id: soc_ram
+    attributes:
+      label: "SoC & RAM"
+      placeholder: "z. B. Snapdragon 8 Gen 3, 12 GB RAM"
+    validations:
+      required: true
+  - type: dropdown
+    id: os_version
+    attributes:
+      label: "Android / One UI Version"
+      options:
+        - "One UI 7 (Android 15)"
+        - "One UI 6.1.1 (Android 14)"
+        - "One UI 6.0 (Android 14)"
+        - "Älter / AOSP"
+    validations:
+      required: true
+  - type: input
+    id: glmark2_fps
+    attributes:
+      label: "glmark2 Score / FPS"
+      placeholder: "z. B. 165 FPS (oder 'Not tested')"
+  - type: checkboxes
+    id: features
+    attributes:
+      label: "Funktionstest"
+      options:
+        - label: "VirGL Hardware Acceleration läuft fehlerfrei"
+        - label: "PulseAudio Sound ist synchron und knackfrei"
+        - label: "Keine Abstürze durch Android LMK unter Last"
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Zusätzliche Beobachtungen oder Tweaks"
+      placeholder: "Besonderheiten bei Auflösung, DPI oder Addon-Nutzung..."
