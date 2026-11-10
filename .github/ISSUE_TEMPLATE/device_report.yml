@@ -5,19 +5,19 @@ labels: ["device-report", "verified-hardware"]
 body:
   - type: markdown
     attributes:
-      value: "Vielen Dank für das Testen des Stacks! Bitte fülle die folgenden Felder aus, damit wir dein Gerät in die offizielle Kompatibilitätstabelle aufnehmen können."
+      value: "Thanks for testing the stack! Please fill in the details below so we can add your device to the official compatibility matrix."
   - type: input
     id: device_model
     attributes:
       label: "Device Model"
-      placeholder: "z. B. Samsung Galaxy S24 Ultra / Tab S9"
+      placeholder: "e.g., Samsung Galaxy S24 Ultra / Galaxy Tab S9"
     validations:
       required: true
   - type: input
     id: soc_ram
     attributes:
       label: "SoC & RAM"
-      placeholder: "z. B. Snapdragon 8 Gen 3, 12 GB RAM"
+      placeholder: "e.g., Snapdragon 8 Gen 3, 12 GB RAM"
     validations:
       required: true
   - type: dropdown
@@ -28,24 +28,24 @@ body:
         - "One UI 7 (Android 15)"
         - "One UI 6.1.1 (Android 14)"
         - "One UI 6.0 (Android 14)"
-        - "Älter / AOSP"
+        - "Older / Custom ROM / AOSP"
     validations:
       required: true
   - type: input
     id: glmark2_fps
     attributes:
       label: "glmark2 Score / FPS"
-      placeholder: "z. B. 165 FPS (oder 'Not tested')"
+      placeholder: "e.g., 165 FPS (or 'Not tested')"
   - type: checkboxes
     id: features
     attributes:
-      label: "Funktionstest"
+      label: "Verification Checklist"
       options:
-        - label: "VirGL Hardware Acceleration läuft fehlerfrei"
-        - label: "PulseAudio Sound ist synchron und knackfrei"
-        - label: "Keine Abstürze durch Android LMK unter Last"
+        - label: "VirGL hardware acceleration works without crashes"
+        - label: "PulseAudio sound is synchronized with zero crackling"
+        - label: "No process kills by Android LMK under heavy load"
   - type: textarea
     id: notes
     attributes:
-      label: "Zusätzliche Beobachtungen oder Tweaks"
-      placeholder: "Besonderheiten bei Auflösung, DPI oder Addon-Nutzung..."
+      label: "Additional Observations & Tweaks"
+      placeholder: "Notes on resolution, DPI scaling tweaks, thermals, or specific addons tested..."
