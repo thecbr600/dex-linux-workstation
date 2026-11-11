@@ -41,30 +41,7 @@ Unlike traditional setups relying strictly on Qualcomm Turnip/Zink drivers, this
 | **3D Engine Test** | Native 3D / Neverball / 1440p MPV | Native 3D / Stable TBDR Pipeline |
 
 ---
-## Empirical Verification & Benchmark
-
-To prove workstation-grade POSIX compliance, dynamic linking, and multi-core scaling under sustained load, this stack compiles the full **Redis** codebase directly on-device using standard GNU toolchains.
-
-### Benchmark Results (Snapdragon Flagship / PRoot Debian 13)
-
-| Metric | Result | Note |
-| :--- | :--- | :--- |
-| **Real (Wall Clock)** | **3m 21.927s** | Complete build + link time |
-| **User (CPU Time)** | **5m 41.676s** | Proof of multi-core scaling across performance cores |
-| **Sys (Kernel Overhead)** | **0m 52.280s** | ~13% Syscall translation overhead (PRoot efficiency) |
-| **Memory Integrity Test**| **PASSED** | 256 MB pattern allocation (`--test-memory 256`) |
-
-<p align="center">
-  <img src="assets/benchmark-redis-build-verification.png" alt="Redis Build Verification" width="750">
-</p>
-
-### Reproduce on Your Device
-
-Inside your Debian container, verify basic dependencies:
-```bash
-apt update && apt install -y git build-essential make gcc
-
----
+## 
 
 ## Real-World Efficiency & Battery Benchmarks
 
@@ -183,3 +160,30 @@ Pull requests and technical discussions are explicitly encouraged around:
 3. **Background Storage Sync:** Native, low-overhead sync routines (e.g., automated `rclone bisync` daemon configurations).
 
 Feel free to open issues or submit pull requests if you find ways to further push the boundaries of mobile workstation architecture.
+
+## Empirical Verification & Benchmark
+
+To prove workstation-grade POSIX compliance, dynamic linking, and multi-core scaling under sustained load, this stack compiles the full **Redis** codebase directly on-device using standard GNU toolchains.
+
+### Benchmark Results (Snapdragon Flagship / PRoot Debian 13)
+
+| Metric | Result | Note |
+| :--- | :--- | :--- |
+| **Real (Wall Clock)** | **3m 21.927s** | Complete build + link time |
+| **User (CPU Time)** | **5m 41.676s** | Proof of multi-core scaling across performance cores |
+| **Sys (Kernel Overhead)** | **0m 52.280s** | ~13% Syscall translation overhead (PRoot efficiency) |
+| **Memory Integrity Test**| **PASSED** | 256 MB pattern allocation (`--test-memory 256`) |
+
+<p align="center">
+  <img src="assets/benchmark-redis-build-verification.png" alt="Redis Build Verification" width="750">
+</p>
+
+### Reproduce on Your Device
+
+Inside your Debian container, verify basic dependencies:
+```bash
+apt update && apt install -y git build-essential make gcc
+
+Run the official verification one-liner:
+
+cd /tmp && rm -rf redis && git clone --depth 1 [https://github.com/redis/redis.git](https://github.com/redis/redis.git) && cd redis && echo "=== BUILD START ($(nproc) Cores) ===" && time make -j$(nproc) MALLOC=libc && ./src/redis-server --version && ./src/redis-server --test-memory 256 && echo "=== REDIS SUCCESSFULLY BUILT & VERIFIED ==="
