@@ -175,7 +175,7 @@ To prove workstation-grade POSIX compliance, dynamic linking, and multi-core sca
 | **Memory Integrity Test**| **PASSED** | 256 MB pattern allocation (`--test-memory 256`) |
 
 <p align="center">
-  <img src="assets/benchmark-redis-build-verification.png" alt="Redis Build Verification" width="750">
+  <img src="docs/assets/Redis%20final%20build%20benchmark.jpg" alt="Redis Final Build Benchmark" width="750">
 </p>
 
 ### Reproduce on Your Device
