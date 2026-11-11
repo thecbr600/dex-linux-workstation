@@ -41,6 +41,30 @@ Unlike traditional setups relying strictly on Qualcomm Turnip/Zink drivers, this
 | **3D Engine Test** | Native 3D / Neverball / 1440p MPV | Native 3D / Stable TBDR Pipeline |
 
 ---
+## Empirical Verification & Benchmark
+
+To prove workstation-grade POSIX compliance, dynamic linking, and multi-core scaling under sustained load, this stack compiles the full **Redis** codebase directly on-device using standard GNU toolchains.
+
+### Benchmark Results (Snapdragon Flagship / PRoot Debian 13)
+
+| Metric | Result | Note |
+| :--- | :--- | :--- |
+| **Real (Wall Clock)** | **3m 21.927s** | Complete build + link time |
+| **User (CPU Time)** | **5m 41.676s** | Proof of multi-core scaling across performance cores |
+| **Sys (Kernel Overhead)** | **0m 52.280s** | ~13% Syscall translation overhead (PRoot efficiency) |
+| **Memory Integrity Test**| **PASSED** | 256 MB pattern allocation (`--test-memory 256`) |
+
+<p align="center">
+  <img src="assets/benchmark-redis-build-verification.png" alt="Redis Build Verification" width="750">
+</p>
+
+### Reproduce on Your Device
+
+Inside your Debian container, verify basic dependencies:
+```bash
+apt update && apt install -y git build-essential make gcc
+
+---
 
 ## Real-World Efficiency & Battery Benchmarks
 
