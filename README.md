@@ -41,26 +41,29 @@ Unlike traditional setups relying strictly on Qualcomm Turnip/Zink drivers, this
 | **3D Engine Test** | Native 3D / Neverball / 1440p MPV | Native 3D / Stable TBDR Pipeline |
 
 ---
-## 
 
-## Real-World Efficiency & Battery Benchmarks
+## Sustained Load Telemetry (32-Minute Soak Test)
 
-A common criticism of running full desktop environments on mobile devices is aggressive battery drain and thermal throttling. We profiled the complete stack on a **Samsung Galaxy S26 Ultra** (Snapdragon 8 Elite, 5,000 mAh battery) under real-world daily driver conditions.
+To verify real-world thermal and memory stability without root or active cooling, the stack ran an unmanaged **31.8-minute continuous build workload** on a Samsung Galaxy S26 Ultra (unplugged, running on battery).
 
-To push efficiency to the absolute limit, all tests were conducted with Android’s system-level **Power Saver Mode enabled (CPU hard-capped at 70%)**.
+![32-Minute Soak Test Telemetry](docs/assets/soak_30m_telemetry.png)
 
-| Metric | Profiled Value | Operational Context |
+### Key Results
+
+| Metric | Result | Notes |
 | :--- | :--- | :--- |
-| **Active Mixed Workflow** | **~3.4% / hour** (~170 mA / 0.65W) | Alternating between Android apps & desktop tasks (Terminal, Chromium, XFCE) |
-| **Background Standby Idle** | **~1.0 - 1.5% / hour** (~60-80 mA) | Termux-X11, VirGL socket & PulseAudio actively running in background (Display off) |
-| **Thermal Profile** | **Hand-warm (<35°C)** | Zero chassis hotspots; passive cooling remains fully effective |
-| **Estimated Working Runtime** | **25+ hours** | Continuous mixed operation on a single 100% battery charge |
+| **Test Duration** | `31.8 min` | Continuous, unmanaged load in Debian 13 PRoot |
+| **Build Consistency** | `9 / 9` | Clean Redis compilations from source (0 failures) |
+| **Battery Temperature** | `30.0 °C – 34.3 °C` | Zero thermal throttling observed |
+| **System Power Draw** | `~2.2 W` | Measured on battery (unplugged) |
+| **Memory & Stability** | `0 LMK kills` | No Android Low Memory Killer events, no memory leaks |
 
-### Why It Runs So Cool
-* **Hardware Offloading vs. CPU Brute-Force:** Traditional mobile Linux setups rely on CPU software rasterizers (`llvmpipe`), pegging high-power Prime Cores at 100%. The VirGL bridge offloads drawing primitives directly to the mobile GPU's dedicated rasterizer pipelines, leaving the CPU in low-power idle states.
-* **Passive Socket Polling:** Termux-X11 and the VirGL daemon communicate over UNIX sockets utilizing standard Linux `epoll`/`poll` mechanisms. When the display is idle or the screen is turned off, IPC threads block cleanly—preventing aggressive wake-lock loops and allowing the Android kernel to gate inactive cores.
+### Reproducing the Benchmark
 
----
+All raw telemetry logs, build timings, and plotting scripts are included in the repository:
+
+```bash
+bash benchmarks/soak_30m.sh---
 
 ## Crucial Step: Disable Android Child Process Restrictions
 
