@@ -1,4 +1,3 @@
-```bash
 #!/usr/bin/env bash
 # tests/benchmark.sh - Workstation POSIX & Compilation Benchmark
 set -e
