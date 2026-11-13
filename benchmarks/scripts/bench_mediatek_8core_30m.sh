@@ -5,7 +5,7 @@ PLATFORM="mediatek_tabs10u"
 TEST_NAME="8core_30m"
 CORES=8
 DURATION=1800   # 30 Minuten
-INTERVAL=15     # Alle 15 Sekunden loggen
+INTERVAL=30     # Alle 15 Sekunden loggen
 OUT_FILE="benchmarks/results/${PLATFORM}_${TEST_NAME}.csv"
 
 mkdir -p benchmarks/results

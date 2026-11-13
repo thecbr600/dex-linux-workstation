@@ -5,7 +5,7 @@ PLATFORM="mediatek_tabs10u"
 TEST_NAME="battery_30m"
 WORKERS="${1:-2}"   # Standard: 2 Burst-Worker (realistische Desktop-Last); 0 = reiner Idle-Test
 DURATION=1800      # 30 Minuten
-INTERVAL=15        # Alle 15 Sekunden loggen
+INTERVAL=30        # Alle 15 Sekunden loggen
 OUT_FILE="benchmarks/results/${PLATFORM}_${TEST_NAME}.csv"
 
 mkdir -p benchmarks/results
