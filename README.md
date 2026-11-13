@@ -13,6 +13,20 @@ No VNC, no root required, and full audio support. Tested and optimized for moder
 **Proof of Concept Video:** [Watch on YouTube](https://youtu.be/3X4EliaiAoY?is=9dkTdEM-_ZWulJTe)
 
 ---
+## Quick Start: Required Apps
+
+Download and install the required APKs directly from the official GitHub releases:
+
+- **Termux:** https://github.com/termux/termux-app/releases  
+  Download `termux-app_...github-debug_arm64-v8a.apk` (recommended for modern Galaxy devices) or `..._universal.apk`.
+- **Termux:X11:** https://github.com/termux/termux-x11/releases/tag/nightly  
+  Download `termux-x11-universal-debug.apk`.
+- **Termux:API *(optional, required for battery metrics in benchmarks)*:** https://github.com/termux/termux-api/releases  
+  Download `termux-api-app_...github.debug.apk`.
+
+> **Important:** Do **not** install Termux from the Google Play Store. The Play Store build is outdated and uses a different signing key, which prevents Termux from communicating with the GitHub builds of Termux:X11 and Termux:API.
+
+---
 
 ## Quick Start (2-Step Modular Installation)
 
