@@ -207,7 +207,7 @@ To prove workstation-grade POSIX compliance, dynamic linking, and multi-core sca
 ### Reproduce on Your Device
 
 Inside your Debian container, verify basic dependencies:
-```bash
+bash
 apt update && apt install -y git build-essential make gcc
 
 Run the official verification one-liner:
