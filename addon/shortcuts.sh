@@ -4,12 +4,12 @@ set -euo pipefail
 mkdir -p "$HOME/.shortcuts"
 
 cat << 'INNER' > "$HOME/.shortcuts/DeX Desktop"
-#!/usr/bin/env bash
+#!/data/data/com.termux/files/usr/bin/bash
 cd "$HOME" && ./desktop
 INNER
 
 cat << 'INNER' > "$HOME/.shortcuts/DeX Mobile"
-#!/usr/bin/env bash
+#!/data/data/com.termux/files/usr/bin/bash
 cd "$HOME" && ./mobile
 INNER
 
