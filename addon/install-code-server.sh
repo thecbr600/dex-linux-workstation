@@ -20,20 +20,21 @@ auth: none
 cert: false
 INNER
 
-# 3. Create 1-click launcher (starts server if needed + opens app window)
+# 3. Create 1-click launcher (detached server start + dedicated app window)
 echo "Creating helper command (/usr/local/bin/start-code)..."
 cat << 'INNER' > /usr/local/bin/start-code
 #!/bin/bash
 URL="http://127.0.0.1:8080"
 
-if ! curl -fsS "$URL/healthz" >/dev/null 2>&1; then
-    if ! pgrep -f "[c]ode-server" >/dev/null 2>&1; then
-        echo "Starting code-server in background..."
-        mkdir -p ~/.local/share/code-server
-        nohup code-server > ~/.local/share/code-server/coder.log 2>&1 &
-    fi
-    for _ in $(seq 1 20); do
-        curl -fsS "$URL/healthz" >/dev/null 2>&1 && break
+port_open() {
+    (echo > /dev/tcp/127.0.0.1/8080) >/dev/null 2>&1
+}
+
+if ! port_open; then
+    mkdir -p ~/.local/share/code-server
+    setsid code-server --bind-addr 127.0.0.1:8080 --auth none > ~/.local/share/code-server/coder.log 2>&1 < /dev/null &
+    for _ in $(seq 1 60); do
+        port_open && break
         sleep 0.25
     done
 fi
@@ -47,14 +48,18 @@ for bin in chromium chromium-browser google-chrome brave-browser; do
 done
 
 if [ -n "$BROWSER" ]; then
-    nohup "$BROWSER" --no-sandbox --test-type --app="$URL" >/dev/null 2>&1 &
+    setsid "$BROWSER" \
+        --user-data-dir="$HOME/.config/chromium-code-server" \
+        --no-sandbox \
+        --test-type \
+        --app="$URL" >/dev/null 2>&1 < /dev/null &
 else
-    nohup xdg-open "$URL" >/dev/null 2>&1 &
+    setsid xdg-open "$URL" >/dev/null 2>&1 < /dev/null &
 fi
 INNER
 chmod +x /usr/local/bin/start-code
 
-# 4. Create XFCE application menu entry (and update Desktop copy if present)
+# 4. Create/update XFCE application menu entry & any Desktop launcher
 mkdir -p ~/.local/share/applications
 cat << 'INNER' > ~/.local/share/applications/code-server.desktop
 [Desktop Entry]
@@ -67,9 +72,11 @@ Terminal=false
 Categories=Development;
 INNER
 
-if [ -f ~/Desktop/code-server.desktop ]; then
-    cp ~/.local/share/applications/code-server.desktop ~/Desktop/code-server.desktop
-    chmod +x ~/Desktop/code-server.desktop
-fi
+for f in ~/Desktop/*code*.desktop ~/Desktop/*Code*.desktop; do
+    if [ -f "$f" ]; then
+        cp ~/.local/share/applications/code-server.desktop "$f"
+        chmod +x "$f"
+    fi
+done
 
 echo "Done! Click the code-server icon or run 'start-code' anytime."
