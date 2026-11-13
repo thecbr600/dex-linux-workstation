@@ -3,6 +3,8 @@ set -e
 
 echo "=== Installing and Configuring code-server ==="
 
+export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+
 # 1. Install code-server if missing
 if ! command -v code-server &>/dev/null; then
     echo "Installing code-server via official installer..."
@@ -20,10 +22,23 @@ auth: none
 cert: false
 INNER
 
-# 3. Create 1-click launcher (detached server start + dedicated app window)
+# 3. Hide Chromium --no-sandbox banner via official managed policy
+for policy_dir in /etc/chromium/policies/managed /etc/opt/chrome/policies/managed /etc/brave/policies/managed; do
+    mkdir -p "$policy_dir" 2>/dev/null || true
+    if [ -d "$policy_dir" ]; then
+        cat << 'INNER' > "$policy_dir/hide-sandbox-warning.json"
+{
+  "CommandLineFlagSecurityWarningsEnabled": false
+}
+INNER
+    fi
+done
+
+# 4. Create 1-click launcher (explicit PATH + detached background server + app window)
 echo "Creating helper command (/usr/local/bin/start-code)..."
 cat << 'INNER' > /usr/local/bin/start-code
 #!/bin/bash
+export PATH="$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 URL="http://127.0.0.1:8080"
 
 port_open() {
@@ -31,12 +46,19 @@ port_open() {
 }
 
 if ! port_open; then
-    mkdir -p ~/.local/share/code-server
-    setsid code-server --bind-addr 127.0.0.1:8080 --auth none > ~/.local/share/code-server/coder.log 2>&1 < /dev/null &
-    for _ in $(seq 1 60); do
-        port_open && break
-        sleep 0.25
-    done
+    CODE_BIN="$(command -v code-server || true)"
+    if [ -z "$CODE_BIN" ] && [ -x "$HOME/.local/bin/code-server" ]; then
+        CODE_BIN="$HOME/.local/bin/code-server"
+    fi
+
+    if [ -n "$CODE_BIN" ]; then
+        mkdir -p ~/.local/share/code-server
+        ( nohup "$CODE_BIN" --bind-addr 127.0.0.1:8080 --auth none > ~/.local/share/code-server/coder.log 2>&1 < /dev/null & )
+        for _ in $(seq 1 60); do
+            port_open && break
+            sleep 0.25
+        done
+    fi
 fi
 
 BROWSER=""
@@ -48,18 +70,18 @@ for bin in chromium chromium-browser google-chrome brave-browser; do
 done
 
 if [ -n "$BROWSER" ]; then
-    setsid "$BROWSER" \
+    ( nohup "$BROWSER" \
         --user-data-dir="$HOME/.config/chromium-code-server" \
         --no-sandbox \
         --test-type \
-        --app="$URL" >/dev/null 2>&1 < /dev/null &
+        --app="$URL" >/dev/null 2>&1 < /dev/null & )
 else
-    setsid xdg-open "$URL" >/dev/null 2>&1 < /dev/null &
+    ( nohup xdg-open "$URL" >/dev/null 2>&1 < /dev/null & )
 fi
 INNER
 chmod +x /usr/local/bin/start-code
 
-# 4. Create/update XFCE application menu entry & any Desktop launcher
+# 5. Create/update XFCE application menu entry & any Desktop launcher
 mkdir -p ~/.local/share/applications
 cat << 'INNER' > ~/.local/share/applications/code-server.desktop
 [Desktop Entry]
