@@ -214,21 +214,33 @@ Run the official verification one-liner:
 
 cd /tmp && rm -rf redis && git clone --depth 1 [https://github.com/redis/redis.git](https://github.com/redis/redis.git) && cd redis && echo "=== BUILD START ($(nproc) Cores) ===" && time make -j$(nproc) MALLOC=libc && ./src/redis-server --version && ./src/redis-server --test-memory 256 && echo "=== REDIS SUCCESSFULLY BUILT & VERIFIED ==="
 
-```
-```
-
 ## Optional Add-ons
 
-Enhance your workstation with modular add-ons from the `addon/` directory. Run these one-liners after completing the main setup:
+Extend your workstation after completing the main setup using any of the modular add-ons below.
 
-| Add-on | Description | One-Liner |
-| :--- | :--- | :--- |
-| **GPU Acceleration** | Enables hardware-accelerated OpenGL (VirGL) for smoother graphics | `curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/install-gpu.sh \| bash` |
-| **VS Code Server** | Installs browser-based VS Code (`code-server`) for local development | `curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/install-code-server.sh \| bash` |
-| **Super Key Mapping** | Maps the hardware Super/Meta key to open the XFCE app menu | `curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/enable-super-key.sh \| bash` |
-| **Home Screen Shortcuts** | Creates 1-tap `DeX Desktop` & `DeX Mobile` icons via `Termux:Widget` | `curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/shortcuts.sh \| bash` |
-| **Auto-Close X11** | Automatically closes `Termux:X11` and background services on XFCE logout | `curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/autoclose.sh \| bash` |
+> **Tip:** If you use both **GPU Acceleration** and **Auto-Close X11**, run `autoclose.sh` **last** so the logout hook is preserved.
 
-> **Notes:**
-> - Run `shortcuts.sh` and `autoclose.sh` in **native Termux** (if using `install-gpu.sh`, run `autoclose.sh` **last** so the logout hook isn't overwritten).
-> - `shortcuts.sh` requires **Termux:Widget** from the same source as Termux (F-Droid or GitHub) and *"Display over other apps"* enabled for Termux.
+- **GPU Acceleration** — Enables hardware-accelerated OpenGL (VirGL) for smoother graphics:
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/install-gpu.sh | bash
+  ```
+
+- **VS Code Server** — Installs browser-based VS Code (`code-server`) for local development:
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/install-code-server.sh | bash
+  ```
+
+- **Super Key Mapping** — Maps the hardware Super/Meta key to open the XFCE application menu:
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/enable-super-key.sh | bash
+  ```
+
+- **Home Screen Shortcuts** *(native Termux)* — Creates 1-tap `DeX Desktop` & `DeX Mobile` icons via `Termux:Widget` *(requires Termux:Widget from the same source as Termux + "Display over other apps")*:
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/shortcuts.sh | bash
+  ```
+
+- **Auto-Close X11 on Logout** *(native Termux)* — Automatically closes `Termux:X11` and background services when clicking **Logout** in XFCE:
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/autoclose.sh | bash
+  ```
