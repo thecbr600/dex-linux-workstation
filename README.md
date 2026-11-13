@@ -207,12 +207,16 @@ To prove workstation-grade POSIX compliance, dynamic linking, and multi-core sca
 ### Reproduce on Your Device
 
 Inside your Debian container, verify basic dependencies:
-bash
+
+```bash
 apt update && apt install -y git build-essential make gcc
+```
 
 Run the official verification one-liner:
 
+```bash
 cd /tmp && rm -rf redis && git clone --depth 1 [https://github.com/redis/redis.git](https://github.com/redis/redis.git) && cd redis && echo "=== BUILD START ($(nproc) Cores) ===" && time make -j$(nproc) MALLOC=libc && ./src/redis-server --version && ./src/redis-server --test-memory 256 && echo "=== REDIS SUCCESSFULLY BUILT & VERIFIED ==="
+```
 
 ## Optional Add-ons
 
