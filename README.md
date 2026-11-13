@@ -1,5 +1,11 @@
 # Dex-Linux-Workstation
 
+[![GitHub Stars](https://img.shields.io/github/stars/thecbr600/dex-linux-workstation?style=flat&logo=github)](https://github.com/thecbr600/dex-linux-workstation/stargazers)
+[![Open Issues](https://img.shields.io/github/issues/thecbr600/dex-linux-workstation?style=flat&logo=github&color=brightgreen)](https://github.com/thecbr600/dex-linux-workstation/issues)
+[![Closed Issues](https://img.shields.io/github/issues-closed/thecbr600/dex-linux-workstation?style=flat&logo=github&color=blue)](https://github.com/thecbr600/dex-linux-workstation/issues?q=is%3Aissue+is%3Aclosed)
+[![License](https://img.shields.io/github/license/thecbr600/dex-linux-workstation?style=flat)](https://github.com/thecbr600/dex-linux-workstation/blob/main/LICENSE)
+![Platform](https://img.shields.io/badge/SoC-Snapdragon%20%7C%20MediaTek-blueviolet?style=flat&logo=android)
+
 A robust, low-latency Debian 13 (Trixie) desktop environment running natively on Android via Termux, PRoot, and Termux-X11. 
 
 No VNC, no root required, and full audio support. Tested and optimized for modern flagship hardware (e.g., Samsung Galaxy S25/S26 Ultra, Galaxy Tab S10 Ultra), this project demonstrates a seamless, hardware-accelerated Linux desktop experience—achieving what the defunct official Linux on DeX project originally promised.
