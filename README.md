@@ -215,10 +215,20 @@ Run the official verification one-liner:
 cd /tmp && rm -rf redis && git clone --depth 1 [https://github.com/redis/redis.git](https://github.com/redis/redis.git) && cd redis && echo "=== BUILD START ($(nproc) Cores) ===" && time make -j$(nproc) MALLOC=libc && ./src/redis-server --version && ./src/redis-server --test-memory 256 && echo "=== REDIS SUCCESSFULLY BUILT & VERIFIED ==="
 
 ```
+```
 
 ## Optional Add-ons
 
-Run in native Termux after setup (if using the GPU add-on, run `autoclose.sh` last):
+Enhance your workstation with modular add-ons from the `addon/` directory. Run these one-liners after completing the main setup:
 
-- **Home Screen Shortcuts:** `./addon/shortcuts.sh` *(requires Termux:Widget from the same source + "Display over other apps")*
-- **Auto-Close X11 on Logout:** `./addon/autoclose.sh` *(closes Termux:X11 automatically upon XFCE logout)*
+| Add-on | Description | One-Liner |
+| :--- | :--- | :--- |
+| **GPU Acceleration** | Enables hardware-accelerated OpenGL (VirGL) for smoother graphics | `curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/install-gpu.sh \| bash` |
+| **VS Code Server** | Installs browser-based VS Code (`code-server`) for local development | `curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/install-code-server.sh \| bash` |
+| **Super Key Mapping** | Maps the hardware Super/Meta key to open the XFCE app menu | `curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/enable-super-key.sh \| bash` |
+| **Home Screen Shortcuts** | Creates 1-tap `DeX Desktop` & `DeX Mobile` icons via `Termux:Widget` | `curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/shortcuts.sh \| bash` |
+| **Auto-Close X11** | Automatically closes `Termux:X11` and background services on XFCE logout | `curl -fsSL https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/autoclose.sh \| bash` |
+
+> **Notes:**
+> - Run `shortcuts.sh` and `autoclose.sh` in **native Termux** (if using `install-gpu.sh`, run `autoclose.sh` **last** so the logout hook isn't overwritten).
+> - `shortcuts.sh` requires **Termux:Widget** from the same source as Termux (F-Droid or GitHub) and *"Display over other apps"* enabled for Termux.
