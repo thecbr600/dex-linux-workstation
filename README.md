@@ -13,6 +13,9 @@ No VNC, no root required, and full audio support. Tested and optimized for moder
 **Proof of Concept Video:** [Watch on YouTube](https://youtu.be/3X4EliaiAoY?is=9dkTdEM-_ZWulJTe)
 
 ---
+[Compatibility List](COMPATIBILITY.md)
+
+---
 ## Quick Start: Required Apps
 
 Download and install the required APKs directly from the official GitHub releases:
