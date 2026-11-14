@@ -10,8 +10,21 @@ A robust, low-latency **Debian 13 (Trixie)** desktop environment running nativel
 
 No VNC, no root required (Knox `0x0` intact), and full audio support. Tested and optimized for modern flagship hardware (e.g., Samsung Galaxy S25/S26 Ultra, Galaxy Tab S10 Ultra), delivering the hardware-accelerated desktop workflow the discontinued official *Linux on DeX* originally promised.
 
-* **Proof of Concept Video:** [Watch on YouTube](https://youtu.be/3X4EliaiAoY?is=9dkTdEM-_ZWulJTe)
-* **Documentation & Benchmarks:** [Project Wiki](https://github.com/thecbr600/dex-linux-workstation/wiki) | [Compatibility List](COMPATIBILITY.md)
+- **Proof of Concept Video:** [Watch on YouTube](https://youtu.be/3X4EliaiAoY?is=9dkTdEM-_ZWulJTe)
+- **Documentation & Benchmarks:** [Project Wiki](https://github.com/thecbr600/dex-linux-workstation/wiki) | [Compatibility List](COMPATIBILITY.md)
+
+### Verified Real-World Telemetry (No Root)
+
+| 30-Minute Sustained Load Baseline | 4.26-Hour Docked Soak Test (S26 Ultra, 80% PD Bypass) |
+| :---: | :---: |
+| ![30m Soak Telemetry](docs/assets/soak_30m_telemetry.png) | ![4.26h S26 Ultra Soak Telemetry](docs/assets/snapdragon_s26u_4h_telemetry.png) |
+
+| Metric (4.26h S26 Ultra Run — 473 Samples) | Result | Notes |
+| :--- | :---: | :--- |
+| **SoC Temperature (Median / Mean)** | **36.0 °C** / 37.6 °C | Light 70% profile; zero thermal throttling (`31–75 °C` range) |
+| **Battery Temperature (Median / Mean)** | **26.7 °C** / 27.2 °C | Cooler than ambient under continuous load (`25.0–30.3 °C`) |
+| **Battery Level Drift** | **0.0 %** (`80% → 80%`) | Full USB-C Power Delivery bypass confirmed over 256 minutes |
+| **RAM Footprint / LMK Events** | **~10.1 GB** / **0 Kills** | Stable memory allocation (`9.4–11.5 GB`), zero Android LMK kills |
 
 ---
 
@@ -19,9 +32,9 @@ No VNC, no root required (Knox `0x0` intact), and full audio support. Tested and
 
 Download and install the official GitHub releases (do **not** use the outdated Google Play Store builds, as mismatched signing keys break IPC between Termux and Termux:X11):
 
-* **Termux:** [GitHub Releases](https://github.com/termux/termux-app/releases) (`termux-app_...github-debug_arm64-v8a.apk`)
-* **Termux:X11:** [Nightly Releases](https://github.com/termux/termux-x11/releases/tag/nightly) (`termux-x11-universal-debug.apk`)
-* **Termux:API *(optional, for benchmark telemetry)*:** [GitHub Releases](https://github.com/termux/termux-api/releases) (`termux-api-app_...github.debug.apk`)
+- **Termux:** [GitHub Releases](https://github.com/termux/termux-app/releases) (`termux-app_...github-debug_arm64-v8a.apk`)
+- **Termux:X11:** [Nightly Releases](https://github.com/termux/termux-x11/releases/tag/nightly) (`termux-x11-universal-debug.apk`)
+- **Termux:API *(optional, for benchmark telemetry)*:** [GitHub Releases](https://github.com/termux/termux-api/releases) (`termux-api-app_...github.debug.apk`)
 
 > **Important Android Requirement:** Disable Android's **Phantom Process Killer** (*Settings > Developer options > Disable child process restrictions*) and set battery usage for **Termux** and **Termux:X11** to **Unrestricted**. See the [Android Setup Wiki](https://github.com/thecbr600/dex-linux-workstation/wiki/Android-Setup) for ADB commands and details.
 
@@ -51,19 +64,19 @@ Extend your workstation after completing the base setup.
 
 > **Tip:** If you install both **GPU Acceleration** and **Auto-Close X11**, run `autoclose.sh` **last** so the XFCE logout hook is preserved.
 
-* **VS Code Server** — Browser-based VS Code (`code-server`) for local development:
+- **VS Code Server** — Browser-based VS Code (`code-server`) for local development:
   ```bash
   curl -fsSL [https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/install-code-server.sh](https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/install-code-server.sh) | bash
   ```
-* **Super Key Mapping** — Maps the hardware Super/Meta key to open the XFCE application menu:
+- **Super Key Mapping** — Maps the hardware Super/Meta key to open the XFCE application menu:
   ```bash
   curl -fsSL [https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/enable-super-key.sh](https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/enable-super-key.sh) | bash
   ```
-* **Home Screen Shortcuts** *(native Termux)* — Creates 1-tap `DeX Desktop` & `DeX Mobile` icons via `Termux:Widget`:
+- **Home Screen Shortcuts** *(native Termux)* — Creates 1-tap `DeX Desktop` & `DeX Mobile` icons via `Termux:Widget`:
   ```bash
   curl -fsSL [https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/shortcuts.sh](https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/shortcuts.sh) | bash
   ```
-* **Auto-Close X11 on Logout** *(native Termux)* — Closes `Termux:X11` and background services automatically when logging out of XFCE:
+- **Auto-Close X11 on Logout** *(native Termux)* — Closes `Termux:X11` and background services automatically when logging out of XFCE:
   ```bash
   curl -fsSL [https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/autoclose.sh](https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/autoclose.sh) | bash
   ```
@@ -74,10 +87,10 @@ Extend your workstation after completing the base setup.
 
 All technical documentation, telemetry charts, and troubleshooting guides live in the **[Project Wiki](https://github.com/thecbr600/dex-linux-workstation/wiki)**:
 
-* **[Android Setup & Prerequisites](https://github.com/thecbr600/dex-linux-workstation/wiki/Android-Setup)** — Phantom Process Killer, battery settings, and `Termux:Widget` setup.
-* **[Architecture & Stack](https://github.com/thecbr600/dex-linux-workstation/wiki/Architecture)** — PulseAudio TCP bridge, X11 UNIX sockets, and our LMK-safe Chromium wrapper.
-* **[Hardware & Benchmarks](https://github.com/thecbr600/dex-linux-workstation/wiki/Hardware-and-Benchmarks)** — Snapdragon 8 Elite vs. MediaTek Dimensity 9300+ (`glmark2`), 32-minute soak test telemetry, and full Redis source build verification.
-* **[Troubleshooting & FAQ](https://github.com/thecbr600/dex-linux-workstation/wiki/Troubleshooting-and-FAQ)** — Common PRoot constraints, VPN routing, and CDN cache tips.
+- **[Android Setup & Prerequisites](https://github.com/thecbr600/dex-linux-workstation/wiki/Android-Setup)** — Phantom Process Killer, battery settings, and `Termux:Widget` setup.
+- **[Architecture & Stack](https://github.com/thecbr600/dex-linux-workstation/wiki/Architecture)** — PulseAudio TCP bridge, X11 UNIX sockets, and our LMK-safe Chromium wrapper.
+- **[Hardware & Benchmarks](https://github.com/thecbr600/dex-linux-workstation/wiki/Hardware-and-Benchmarks)** — Snapdragon 8 Elite vs. MediaTek Dimensity 9300+ (`glmark2`), 30-minute sustained load & 4.26-hour S26 Ultra soak telemetry, and full Redis source build verification.
+- **[Troubleshooting & FAQ](https://github.com/thecbr600/dex-linux-workstation/wiki/Troubleshooting-and-FAQ)** — Common PRoot constraints, VPN routing, and CDN cache tips.
 
 ---
 
@@ -85,7 +98,7 @@ All technical documentation, telemetry charts, and troubleshooting guides live i
 
 This project is an opinionated blueprint for desktop-replacement workflows on **modern flagship mobile hardware**:
 
-* **Hardware Baseline:** Modern ARM64 flagship SoC (Snapdragon 8 Gen series, MediaTek Dimensity 9000+ series), **12 GB+ RAM** (16 GB recommended), and **UFS 3.1 / 4.0** storage.
-* **No Legacy / Budget Support:** Issues regarding performance on sub-spec or legacy devices will be closed without triage.
-* **Debian 13 (Trixie) Only:** Alternate distributions (Ubuntu, Arch, Kali) are out of scope.
-* **Contributing:** PRs and technical discussions around `virglrenderer` IPC overhead, `seccomp`/PRoot optimizations, and automated storage sync (`rclone`) are welcome.
+- **Hardware Baseline:** Modern ARM64 flagship SoC (Snapdragon 8 Gen series, MediaTek Dimensity 9000+ series), **12 GB+ RAM** (16 GB recommended), and **UFS 3.1 / 4.0** storage.
+- **No Legacy / Budget Support:** Issues regarding performance on sub-spec or legacy devices will be closed without triage.
+- **Debian 13 (Trixie) Only:** Alternate distributions (Ubuntu, Arch, Kali) are out of scope.
+- **Contributing:** PRs and technical discussions around `virglrenderer` IPC overhead, `seccomp`/PRoot optimizations, and automated storage sync (`rclone`) are welcome.
