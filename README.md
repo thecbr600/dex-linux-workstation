@@ -15,16 +15,17 @@ No VNC, no root required (Knox `0x0` intact), and full audio support. Tested and
 
 ### Verified Real-World Telemetry (No Root)
 
-| 30-Minute Sustained Load Baseline | 4.26-Hour Docked Soak Test (S26 Ultra, 80% PD Bypass) |
+| 30-Minute Compiler & Load Baseline | 4.26-Hour Docked Soak Test (S26 Ultra, 80% PD Bypass) |
 | :---: | :---: |
 | ![30m Soak Telemetry](docs/assets/soak_30m_telemetry.png) | ![4.26h S26 Ultra Soak Telemetry](docs/assets/snapdragon_s26u_4h_telemetry.png) |
 
-| Metric (4.26h S26 Ultra Run — 473 Samples) | Result | Notes |
+| Benchmark / Metric | Result | Verified Details |
 | :--- | :---: | :--- |
-| **SoC Temperature (Median / Mean)** | **36.0 °C** / 37.6 °C | Light 70% profile; zero thermal throttling (`31–75 °C` range) |
-| **Battery Temperature (Median / Mean)** | **26.7 °C** / 27.2 °C | Cooler than ambient under continuous load (`25.0–30.3 °C`) |
-| **Battery Level Drift** | **0.0 %** (`80% → 80%`) | Full USB-C Power Delivery bypass confirmed over 256 minutes |
-| **RAM Footprint / LMK Events** | **~10.1 GB** / **0 Kills** | Stable memory allocation (`9.4–11.5 GB`), zero Android LMK kills |
+| **30m Redis Source Builds** | **9 / 9 Builds** (`Exit 0`) | 31.8 min continuous `make` (`Ø 3m 30s`/build, 8.3% variance, 0 PPK kills) |
+| **4.26h SoC Temperature** | **36.0 °C** Median | Mean 37.6 °C (`31–75 °C` range), Light 70% profile, zero thermal throttling |
+| **4.26h Battery Temperature** | **26.7 °C** Median | Mean 27.2 °C (`25.0–30.3 °C`), cooler than ambient under continuous load |
+| **4.26h Battery Level Drift** | **0.0 %** (`80% → 80%`) | Full USB-C Power Delivery bypass confirmed across 473 samples (256 min) |
+| **4.26h RAM Footprint / LMK** | **~10.1 GB** / **0 Kills** | Stable allocation (`9.4–11.5 GB`), zero Android Low Memory Killer events |
 
 ---
 
