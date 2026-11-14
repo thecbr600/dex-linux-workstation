@@ -2,10 +2,10 @@
 set -euo pipefail
 
 PLATFORM="snapdragon_s26u"
-TEST_NAME="8core_30m"
-CORES=8
-DURATION=1800   # 30 Minuten
-INTERVAL=30     # Alle 15 Sekunden loggen
+TEST_NAME="4core_5h_docked_light70"
+CORES=4
+DURATION=18000  # 5 Stunden (5 * 3600s)
+INTERVAL=30     # Alle 30 Sekunden loggen (600 Datenpunkte)
 OUT_FILE="benchmarks/results/${PLATFORM}_${TEST_NAME}.csv"
 
 mkdir -p benchmarks/results
@@ -13,7 +13,10 @@ PIDS=()
 STRESS_PID=""
 
 cleanup() {
-  [[ -n "$STRESS_PID" ]] && kill "$STRESS_PID" 2>/dev/null || true
+  if [[ -n "$STRESS_PID" ]]; then
+    pkill -P "$STRESS_PID" 2>/dev/null || true
+    kill "$STRESS_PID" 2>/dev/null || true
+  fi
   for pid in ${PIDS[@]+"${PIDS[@]}"}; do
     kill "$pid" 2>/dev/null || true
   done
@@ -35,15 +38,27 @@ read_soc_temp() {
 }
 
 read_batt_temp() {
-  awk '{printf "%.1f", $1/10}' /sys/class/power_supply/battery/temp 2>/dev/null || echo "N/A"
+  if [[ -r /sys/class/power_supply/battery/temp ]]; then
+    awk '{printf "%.1f", $1/10}' /sys/class/power_supply/battery/temp 2>/dev/null || echo "N/A"
+  elif [[ -r /tmp/dex-battery.json ]]; then
+    python3 -c 'import json; print(json.load(open("/tmp/dex-battery.json")).get("temperature", "N/A"))' 2>/dev/null || echo "N/A"
+  else
+    echo "N/A"
+  fi
 }
 
 read_batt_pct() {
-  cat /sys/class/power_supply/battery/capacity 2>/dev/null || echo "N/A"
+  if [[ -r /sys/class/power_supply/battery/capacity ]]; then
+    cat /sys/class/power_supply/battery/capacity 2>/dev/null || echo "N/A"
+  elif [[ -r /tmp/dex-battery.json ]]; then
+    python3 -c 'import json; print(json.load(open("/tmp/dex-battery.json")).get("percentage", "N/A"))' 2>/dev/null || echo "N/A"
+  else
+    echo "N/A"
+  fi
 }
 
 echo "timestamp,elapsed_sec,cores,load_1m,soc_temp_c,batt_temp_c,batt_pct,mem_used_mb" > "$OUT_FILE"
-echo "[*] Starte ${PLATFORM} (${TEST_NAME}) -> ${OUT_FILE}"
+echo "[*] Starte ${PLATFORM} (${TEST_NAME}) [5h / ${CORES} Cores] -> ${OUT_FILE}"
 
 if command -v stress-ng >/dev/null 2>&1; then
   stress-ng --cpu "$CORES" --cpu-method matrixprod --timeout "${DURATION}s" --quiet &
@@ -69,7 +84,7 @@ while true; do
   MEM_MB=$(free -m | awk '/^Mem:/ {print $3}')
 
   echo "${TS_ISO},${ELAPSED},${CORES},${LOAD_1M},${SOC_T},${BATT_T},${BATT_P},${MEM_MB}" >> "$OUT_FILE"
-  printf "\r[%4ds / %4ds] Load: %s | SoC: %s°C | Akku: %s°C (%s%%) | RAM: %s MB   " \
+  printf "\r[%5ds / %5ds] Load: %s | SoC: %s°C | Akku: %s°C (%s%%) | RAM: %s MB   " \
     "$ELAPSED" "$DURATION" "$LOAD_1M" "$SOC_T" "$BATT_T" "$BATT_P" "$MEM_MB"
 
   sleep "$INTERVAL"
