@@ -5,6 +5,7 @@
 [![Closed Issues](https://img.shields.io/github/issues-closed/thecbr600/dex-linux-workstation?style=flat&logo=github&color=blue)](https://github.com/thecbr600/dex-linux-workstation/issues?q=is%3Aissue+is%3Aclosed)
 [![License](https://img.shields.io/github/license/thecbr600/dex-linux-workstation?style=flat)](https://github.com/thecbr600/dex-linux-workstation/blob/main/LICENSE)
 ![Platform](https://img.shields.io/badge/SoC-Snapdragon%20%7C%20MediaTek-blueviolet?style=flat&logo=android)
+![Unique Clones](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/badges/clones.json)
 
 A robust, low-latency **Debian 13 (Trixie)** desktop environment running natively on Android via Termux, PRoot, and Termux:X11.
 
