@@ -1,0 +1,52 @@
+name: Update Unique Clones Badge
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-clones:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch and accumulate unique clones
+        env:
+          GH_TOKEN: ${{ secrets.TRAFFIC_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          mkdir -p badges
+          FILE="badges/clones.json"
+
+          if [ ! -f "$FILE" ]; then
+            echo '{"schemaVersion":1,"label":"Unique Clones","message":"205","color":"brightgreen"}' > "$FILE"
+          fi
+
+          CURRENT=$(python3 -c 'import json; print(int(json.load(open("badges/clones.json"))["message"]))')
+
+          YESTERDAY=$(date -u -d "yesterday" +%Y-%m-%dT00:00:00Z)
+          NEW_CLONES=$(curl -s -H "Authorization: token $GH_TOKEN" \
+            "https://api.github.com/repos/$REPO/traffic/clones" | \
+            python3 -c "import sys, json; data = json.load(sys.stdin).get('clones', []); print(next((c['uniques'] for c in data if c['timestamp'] == '$YESTERDAY'), 0))")
+
+          TOTAL=$((CURRENT + NEW_CLONES))
+
+          cat << EOF > "$FILE"
+          {
+            "schemaVersion": 1,
+            "label": "Unique Clones",
+            "message": "$TOTAL",
+            "color": "brightgreen"
+          }
+          EOF
+
+      - name: Commit updated badge
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add badges/clones.json
+          git diff --staged --quiet || git commit -m "chore: update unique clones badge"
+          git push
