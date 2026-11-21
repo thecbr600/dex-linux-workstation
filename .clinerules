@@ -1,0 +1,7 @@
+# Workspace Rules (dex-linux-workstation)
+
+- **Environment:** Rootless Debian 13 (`proot-distro`) on Android/Termux. Never use `systemd`, `systemctl`, or Docker.
+- **Architecture:** Keep `setup.sh` untouched. Place optional AI/IDE modules strictly under `addon/dex-ai/`.
+- **Local Services:** `dex-daemon` (OpenAI-compatible API) runs at `http://127.0.0.1:8080/v1`; `code-server` runs on port `8443`.
+- **Mandatory Verification:** After creating or editing any Python or Bash file, always run `python3 -m py_compile <file>` or `bash -n <file>` before finishing.
+- **Style:** Keep responses and edits concise, modular, and idempotent.

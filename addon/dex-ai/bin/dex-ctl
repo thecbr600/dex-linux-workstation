@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+PID_FILE="$HOME/dex-agent/daemon.pid"
+LOG_FILE="$HOME/dex-agent/daemon.log"
+
+case "${1:-status}" in
+  start)
+    if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
+      echo "dex-daemon läuft bereits (PID $(cat "$PID_FILE"))"
+      exit 0
+    fi
+    nohup python3 "$HOME/dex-agent/dex_daemon.py" > "$LOG_FILE" 2>&1 &
+    echo $! > "$PID_FILE"
+    sleep 0.5
+    curl -s http://127.0.0.1:8080/dex/status
+    echo
+    ;;
+  stop)
+    curl -s -X POST http://127.0.0.1:8080/dex/sleep >/dev/null 2>&1 || true
+    if [ -f "$PID_FILE" ]; then
+      kill "$(cat "$PID_FILE")" 2>/dev/null || true
+      rm -f "$PID_FILE"
+    fi
+    echo "dex-daemon gestoppt."
+    ;;
+  status)
+    curl -s http://127.0.0.1:8080/dex/status && echo
+    ;;
+  wake)
+    curl -s -X POST http://127.0.0.1:8080/dex/wake && echo
+    ;;
+  sleep)
+    curl -s -X POST http://127.0.0.1:8080/dex/sleep && echo
+    ;;
+  *)
+    echo "Nutzung: dex-ctl {start|stop|status|wake|sleep}"
+    exit 1
+    ;;
+esac

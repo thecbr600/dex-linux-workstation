@@ -1,0 +1,37 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+
+is_running() {
+  python3 -c "import socket; s=socket.socket(); r=s.connect_ex(('127.0.0.1', 8443)); s.close(); exit(0 if r==0 else 1)"
+}
+
+case "${1:-status}" in
+  start)
+    [ "${DEX_NO_IDE:-0}" = "1" ] && echo '{"ide": "disabled", "port": 8443}' && exit 0
+    if is_running; then
+      echo '{"ide": "running", "port": 8443}'
+      exit 0
+    fi
+    nohup proot-distro login debian --shared-tmp -- bash -lc 'command -v code-server >/dev/null && code-server >/tmp/code-server.log 2>&1 &' >/dev/null 2>&1 &
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+      sleep 0.5
+      is_running && break
+    done
+    "$0" status
+    ;;
+  stop)
+    proot-distro login debian -- bash -lc 'pkill -f code-server 2>/dev/null || true' >/dev/null 2>&1 || true
+    echo '{"ide": "stopped", "port": 8443}'
+    ;;
+  status)
+    if is_running; then
+      echo '{"ide": "running", "port": 8443}'
+    else
+      echo '{"ide": "stopped", "port": 8443}'
+    fi
+    ;;
+  *)
+    echo "Nutzung: dex-ide {start|stop|status}"
+    exit 1
+    ;;
+esac
