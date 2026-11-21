@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+case "${1:-}" in
+  vitals) curl -fsS "http://127.0.0.1:8080/dex/vitals"; echo ""; exit $? ;;
+  watch-vitals|watch-wake|watch-sleep)
+    act="${1#watch-}"
+    tok=$(cat "/data/data/com.termux/files/home/dex-agent/.trigger_token" 2>/dev/null || cat "$HOME/dex-agent/.trigger_token" 2>/dev/null)
+    curl -fsS "http://127.0.0.1:8080/dex/trigger?token=${tok}&action=${act}&notify=1" >/dev/null; exit $? ;;
+esac
 set -euo pipefail
 PID_FILE="$HOME/dex-agent/daemon.pid"
 LOG_FILE="$HOME/dex-agent/daemon.log"
