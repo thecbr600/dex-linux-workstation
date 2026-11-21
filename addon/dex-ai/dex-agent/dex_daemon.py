@@ -75,10 +75,40 @@ def get_trigger_token() -> str:
     return tok
 
 
+_BAT_CACHE = {"ts": 0.0, "bp": None, "bs": "unknown"}
+
+
+def _run_termux(cmd, timeout: float = 4.0) -> str:
+    import os as _os, signal as _sig, subprocess as _sp
+    p = _sp.Popen(
+        cmd,
+        stdout=_sp.PIPE,
+        stderr=_sp.DEVNULL,
+        text=True,
+        start_new_session=True,
+    )
+    try:
+        out, _ = p.communicate(timeout=timeout)
+        return out or ""
+    except _sp.TimeoutExpired:
+        try:
+            _os.killpg(p.pid, _sig.SIGKILL)
+        except Exception:
+            p.kill()
+        p.communicate()
+        return ""
+    except Exception:
+        try:
+            _os.killpg(p.pid, _sig.SIGKILL)
+        except Exception:
+            pass
+        return ""
+
+
 def notify_watch(title: str, content: str, notif_id: str = "dex-watch") -> None:
     cmd = ["termux-notification", "--id", notif_id, "--title", title, "--content", content[:500]]
     try:
-        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5, check=False)
+        _run_termux(cmd, timeout=5.0)
     except Exception:
         pass
 
@@ -174,12 +204,16 @@ def get_vitals() -> dict:
             btemp = round(r / 10.0 if abs(r) > 150 else r, 1)
         except OSError:
             pass
-    if bp is None:
+    if bp is None and (time.monotonic() - _BAT_CACHE["ts"]) < 180.0:
+        bp, bs = _BAT_CACHE["bp"], _BAT_CACHE["bs"]
+    elif bp is None:
+        _BAT_CACHE["ts"] = time.monotonic()
         try:
-            r = subprocess.run(["termux-battery-status"], capture_output=True, text=True, timeout=2)
-            if r.returncode == 0 and r.stdout.strip():
-                d = json.loads(r.stdout)
+            raw_b = _run_termux(["termux-battery-status"], timeout=4.0).strip()
+            if raw_b:
+                d = json.loads(raw_b)
                 bp, bs = d.get("percentage"), d.get("status", bs)
+                _BAT_CACHE["bp"], _BAT_CACHE["bs"] = bp, bs
                 if d.get("temperature") is not None: btemp = round(float(d["temperature"]), 1)
         except Exception:
             pass

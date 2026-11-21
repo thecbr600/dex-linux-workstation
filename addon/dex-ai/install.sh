@@ -46,7 +46,7 @@ proot-distro login debian --shared-tmp -- bash -c '
   mkdir -p /root/Desktop /usr/share/applications
   cat << "EUI" > /usr/local/bin/dex-ai-ui
 #!/usr/bin/env bash
-exec chromium --no-sandbox --test-type --disable-extensions --ozone-platform=x11 --disable-dev-shm-usage --user-data-dir=/root/.config/chromium-dex-ai --app="http://127.0.0.1:8080" "$@"
+exec chromium --no-sandbox --test-type --disable-extensions --disable-gpu --disable-software-rasterizer --ozone-platform=x11 --disable-dev-shm-usage --user-data-dir=/root/.config/chromium-dex-ai --app="http://127.0.0.1:8080" "$@"
 EUI
   chmod +x /usr/local/bin/dex-ai-ui
   cat << "EDESK" > "/root/Desktop/DeX AI.desktop"
