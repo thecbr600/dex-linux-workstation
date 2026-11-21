@@ -15,6 +15,30 @@ import secrets
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+def _port_in_use(port: int = 8081) -> bool:
+    import socket
+    try:
+        with socket.create_connection(("127.0.0.1", port), timeout=0.15):
+            return True
+    except OSError:
+        return False
+
+
+def _reap_orphan_llama(port: int = 8081) -> None:
+    import subprocess as _sp, time as _t
+    _sp.run(["pkill", "-TERM", "-f", "llama-server"], stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+    for _ in range(10):
+        r = _sp.run(["pgrep", "-f", "llama-server"], stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+        if r.returncode != 0 and not _port_in_use(port):
+            return
+        _t.sleep(0.15)
+    _sp.run(["pkill", "-KILL", "-f", "llama-server"], stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+    for _ in range(10):
+        if not _port_in_use(port):
+            return
+        _t.sleep(0.15)
+
+
 def _resolve_model_path() -> Path:
     env_m = os.environ.get("DEX_MODEL_PATH", "").strip()
     if env_m:
@@ -210,6 +234,7 @@ class LlamaManager:
 
             self.state = "waking"
             log_file = open(LOG_PATH, "a", encoding="utf-8")
+            _reap_orphan_llama(8081)
             self.proc = subprocess.Popen(
                 [
                     "llama-server",
@@ -487,6 +512,7 @@ def shutdown_handler(signum, frame) -> None:
 
 
 if __name__ == "__main__":
+    _reap_orphan_llama(8081)
     signal.signal(signal.SIGTERM, shutdown_handler)
     signal.signal(signal.SIGINT, shutdown_handler)
     threading.Thread(target=watchdog_loop, daemon=True).start()

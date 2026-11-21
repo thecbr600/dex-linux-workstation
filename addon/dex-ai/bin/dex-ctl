@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+case "${1:-}" in stop|start|restart) pkill -TERM -f llama-server 2>/dev/null || true; sleep 0.3; pkill -KILL -f llama-server 2>/dev/null || true ;; esac
 case "${1:-}" in
   vitals) curl -fsS "http://127.0.0.1:8080/dex/vitals"; echo ""; exit $? ;;
   watch-vitals|watch-wake|watch-sleep)
