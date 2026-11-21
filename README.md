@@ -36,7 +36,7 @@ Download and install the official GitHub releases (do **not** use the outdated G
 
 - **Termux:** [GitHub Releases](https://github.com/termux/termux-app/releases) (`termux-app_...github-debug_arm64-v8a.apk`)
 - **Termux:X11:** [Nightly Releases](https://github.com/termux/termux-x11/releases/tag/nightly) (`termux-x11-universal-debug.apk`)
-- **Termux:API *(optional, for benchmark telemetry)*:** [GitHub Releases](https://github.com/termux/termux-api/releases) (`termux-api-app_...github.debug.apk`)
+- **Termux:API *(optional, for benchmark telemetry & AI watch alerts)*:** [GitHub Releases](https://github.com/termux/termux-api/releases) (`termux-api-app_...github.debug.apk`)
 
 > **Important Android Requirement:** Disable Android's **Phantom Process Killer** (*Settings > Developer options > Disable child process restrictions*) and set battery usage for **Termux** and **Termux:X11** to **Unrestricted**. See the [Android Setup Wiki](https://github.com/thecbr600/dex-linux-workstation/wiki/Android-Setup) for ADB commands and details.
 
@@ -66,6 +66,10 @@ Extend your workstation after completing the base setup.
 
 > **Tip:** If you install both **GPU Acceleration** and **Auto-Close X11**, run `autoclose.sh` **last** so the XFCE logout hook is preserved.
 
+- **Local GPU AI Workstation (`DeX AI`)** — Native Adreno/Vulkan `llama-server` managed by an on-demand proxy (`0 MB` idle footprint, `Qwen3-4B Q5_K_M`, standalone desktop launcher, and Wear OS RAM/thermal alerts):
+  ```bash
+  curl -fsSL [https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/dex-ai/install.sh](https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/dex-ai/install.sh) | bash
+  ```
 - **VS Code Server** — Browser-based VS Code (`code-server`) for local development:
   ```bash
   curl -fsSL [https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/install-code-server.sh](https://raw.githubusercontent.com/thecbr600/dex-linux-workstation/main/addon/install-code-server.sh) | bash
@@ -92,6 +96,7 @@ All technical documentation, telemetry charts, and troubleshooting guides live i
 - **[Android Setup & Prerequisites](https://github.com/thecbr600/dex-linux-workstation/wiki/Android-Setup)** — Phantom Process Killer, battery settings, and `Termux:Widget` setup.
 - **[Architecture & Stack](https://github.com/thecbr600/dex-linux-workstation/wiki/Architecture)** — PulseAudio TCP bridge, X11 UNIX sockets, and our LMK-safe Chromium wrapper.
 - **[Hardware & Benchmarks](https://github.com/thecbr600/dex-linux-workstation/wiki/Hardware-and-Benchmarks)** — Snapdragon 8 Elite vs. MediaTek Dimensity 9300+ (`glmark2`), 30-minute sustained load & 4.26-hour S26 Ultra soak telemetry, and full Redis source build verification.
+- **[Local GPU AI & Watch Telemetry](https://github.com/thecbr600/dex-linux-workstation/wiki/Local-GPU-AI)** — On-demand Vulkan `llama-server` proxy, custom `.gguf` model overrides, and Wear OS RAM/thermal watchdog.
 - **[Troubleshooting & FAQ](https://github.com/thecbr600/dex-linux-workstation/wiki/Troubleshooting-and-FAQ)** — Common PRoot constraints, VPN routing, and CDN cache tips.
 
 ---
