@@ -1,1 +1,7 @@
 wiki/
+*.gguf
+*.bin
+*.safetensors
+models/
+.trigger_token
+__pycache__/

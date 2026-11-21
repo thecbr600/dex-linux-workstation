@@ -15,7 +15,19 @@ import secrets
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-MODEL_PATH = Path.home() / "models" / "dex-qwen3-4b-Q5_K_M.gguf"
+def _resolve_model_path() -> Path:
+    env_m = os.environ.get("DEX_MODEL_PATH", "").strip()
+    if env_m:
+        return Path(env_m).expanduser()
+    mdir = Path.home() / "models"
+    for name in ("dex-qwen3-4b-Q5_K_M.gguf", "Qwen3-4B-Q5_K_M.gguf"):
+        if (mdir / name).is_file():
+            return mdir / name
+    found = sorted(mdir.glob("*.gguf")) if mdir.is_dir() else []
+    return found[0] if found else (mdir / "Qwen3-4B-Q5_K_M.gguf")
+
+
+MODEL_PATH = _resolve_model_path()
 LOG_PATH = Path.home() / "dex-agent" / "llama-server.log"
 PROXY_HOST = "127.0.0.1"
 PROXY_PORT = 8080
