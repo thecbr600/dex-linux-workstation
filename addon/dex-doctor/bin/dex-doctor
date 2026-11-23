@@ -1,0 +1,335 @@
+#!/usr/bin/env bash
+# dex-doctor - Preflight & Self-Healing Add-on for DeX Linux Workstation (GPL-3.0)
+set -uo pipefail
+
+FIX=0
+WAKE=0
+for arg in "$@"; do
+  case "$arg" in
+    --fix)  FIX=1 ;;
+    --wake) WAKE=1 ;;
+    -h|--help)
+      echo "Nutzung: dex-doctor [--fix] [--wake]"
+      echo "  --fix   Behebt gefundene Konfigurations-, Rechte- und Lock-Probleme automatisch"
+      echo "  --wake  Weckt den lokalen KI-Daemon waehrend der Pruefung auf (falls installiert)"
+      exit 0
+      ;;
+    *)
+      echo "Unbekannte Option: $arg (nutze --help)"
+      exit 1
+      ;;
+  esac
+done
+
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+  C_OK="\033[1;32m"
+  C_WARN="\033[1;33m"
+  C_FAIL="\033[1;31m"
+  C_FIX="\033[1;36m"
+  C_BOLD="\033[1m"
+  C_RST="\033[0m"
+else
+  C_OK=""; C_WARN=""; C_FAIL=""; C_FIX=""; C_BOLD=""; C_RST=""
+fi
+
+PASS_CNT=0
+WARN_CNT=0
+FAIL_CNT=0
+FIX_CNT=0
+
+ok()    { PASS_CNT=$((PASS_CNT + 1)); printf "${C_OK}[OK]${C_RST}    %s\n" "$1"; }
+warn()  { WARN_CNT=$((WARN_CNT + 1)); printf "${C_WARN}[WARN]${C_RST}  %s\n" "$1"; }
+fail()  { FAIL_CNT=$((FAIL_CNT + 1)); printf "${C_FAIL}[FAIL]${C_RST}  %s\n" "$1"; }
+fixed() { FIX_CNT=$((FIX_CNT + 1));   printf "${C_FIX}[FIXED]${C_RST} %s\n" "$1"; }
+
+check_ai_endpoint() {
+  local can_start_local="$1"
+  local py_res
+  py_res=$(python3 - << 'PY'
+import json, urllib.request
+try:
+    with urllib.request.urlopen("http://127.0.0.1:8080/dex/status", timeout=2) as r:
+        d = json.loads(r.read().decode())
+        print(f"UP|{d.get('state','unknown')}|{d.get('pid')}|{d.get('mem_available_mb','?')}|{d.get('idle_timeout','?')}|{d.get('model','?')}")
+except Exception as e:
+    print(f"DOWN|{e}")
+PY
+)
+  if [[ "$py_res" == DOWN* ]]; then
+    if [ "$FIX" -eq 1 ] && [ "$can_start_local" -eq 1 ] && [ -x "$HOME/bin/dex-ctl" ]; then
+      "$HOME/bin/dex-ctl" start >/dev/null 2>&1 || true
+      sleep 1
+      fixed "KI-Daemon auf 127.0.0.1:8080 wurde neu gestartet"
+      check_ai_endpoint 0
+      return
+    fi
+    fail "KI-Daemon auf 127.0.0.1:8080 nicht erreichbar (${py_res#DOWN|})"
+    return
+  fi
+
+  IFS='|' read -r _ state pid mem_mb timeout model <<< "$py_res"
+  if [ "$WAKE" -eq 1 ] && [ "$state" = "sleeping" ]; then
+    python3 -c 'import urllib.request; urllib.request.urlopen(urllib.request.Request("http://127.0.0.1:8080/dex/wake", method="POST"), timeout=15)' >/dev/null 2>&1 || true
+    state="ready (geweckt)"
+  fi
+
+  ok "KI-Daemon aktiv | Status: ${state} | PID: ${pid} | Timeout: ${timeout}s | Modell: ${model}"
+  if [[ "$mem_mb" =~ ^[0-9]+$ ]]; then
+    if [ "$mem_mb" -lt 3500 ]; then
+      warn "Knapper RAM-Headroom: ${mem_mb} MB verfuegbar (unter 3500 MB fuer 4B-Q5)"
+    else
+      ok "RAM-Headroom komfortabel: ${mem_mb} MB verfuegbar"
+    fi
+  fi
+}
+
+run_termux_checks() {
+  printf "${C_BOLD}=== dex-doctor: Termux Host Check ===${C_RST}\n"
+
+  # 1. PATH & ~/bin
+  if [[ ":$PATH:" == *":$HOME/bin:"* ]]; then
+    ok "\$HOME/bin ist im PATH registriert"
+  else
+    if [ "$FIX" -eq 1 ]; then
+      mkdir -p "$HOME/bin"
+      grep -qxF 'export PATH="$HOME/bin:$PATH"' "$HOME/.bashrc" 2>/dev/null || echo 'export PATH="$HOME/bin:$PATH"' >> "$HOME/.bashrc"
+      export PATH="$HOME/bin:$PATH"
+      fixed "\$HOME/bin in ~/.bashrc ergaenzt"
+    else
+      warn "\$HOME/bin fehlt im aktiven PATH"
+    fi
+  fi
+
+  # 2. Samsung Keyboard IME Fix
+  local tprop="$HOME/.termux/termux.properties"
+  if [ -f "$tprop" ] && grep -Eq '^[[:space:]]*enforce-char-based-input[[:space:]]*=[[:space:]]*true' "$tprop"; then
+    ok "Termux IME: enforce-char-based-input=true gesetzt"
+  else
+    if [ "$FIX" -eq 1 ]; then
+      mkdir -p "$HOME/.termux"
+      echo "enforce-char-based-input=true" >> "$tprop"
+      command -v termux-reload-settings >/dev/null 2>&1 && termux-reload-settings || true
+      fixed "enforce-char-based-input=true in termux.properties gesetzt und neu geladen"
+    else
+      fail "Termux IME: enforce-char-based-input=true fehlt (Samsung-Tastatur-Konflikt)"
+    fi
+  fi
+
+  # 3. Termux:X11 Socket
+  local x11_dir="${PREFIX:-/data/data/com.termux/files/usr}/tmp/.X11-unix"
+  if [ -d "$x11_dir" ] && [ -n "$(ls -A "$x11_dir" 2>/dev/null)" ]; then
+    ok "Termux:X11 Socket aktiv ($x11_dir)"
+  else
+    warn "Kein aktiver Termux:X11 Socket unter $x11_dir (X11-App aktuell geschlossen)"
+  fi
+
+  # 4. Optionales Add-on: DeX AI
+  if [ -f "$HOME/dex-agent/dex_daemon.py" ] || [ -x "$HOME/llama.cpp/build/bin/llama-server" ] || [ -d "$HOME/models" ]; then
+    local llama_bin="$HOME/llama.cpp/build/bin/llama-server"
+    if [ -x "$llama_bin" ]; then
+      ok "DeX AI: llama-server Binary vorhanden ($llama_bin)"
+    else
+      fail "DeX AI: llama-server nicht gefunden oder nicht ausfuehrbar ($llama_bin)"
+    fi
+
+    if [ -e "/system/lib64/libvulkan.so" ] || [ -e "${PREFIX:-/data/data/com.termux/files/usr}/lib/libvulkan.so" ]; then
+      ok "DeX AI: Vulkan-Loader auf dem Host vorhanden"
+    else
+      warn "DeX AI: Kein Vulkan-Loader unter /system/lib64 oder \$PREFIX/lib gefunden"
+    fi
+
+    local model_file=""
+    for m in "$HOME/models/dex-qwen3-4b-Q5_K_M.gguf" "$HOME/models/Qwen3-4B-Q5_K_M.gguf" "$HOME/models/"*.gguf; do
+      if [ -f "$m" ]; then
+        model_file="$m"
+        break
+      fi
+    done
+    if [ -n "$model_file" ]; then
+      local m_size
+      m_size=$(python3 -c "import os; print(os.path.getsize('$model_file'))")
+      if [ "$m_size" -gt 500000000 ]; then
+        ok "DeX AI: GGUF-Modell intakt ($(basename "$model_file"), $((m_size / 1048576)) MB)"
+      else
+        fail "DeX AI: GGUF-Modell unvollstaendig ($(basename "$model_file"), $((m_size / 1048576)) MB)"
+      fi
+    else
+      fail "DeX AI: Kein GGUF-Modell unter \$HOME/models/ gefunden"
+    fi
+
+    if [ -f "$HOME/dex-agent/dex_daemon.py" ] && [ -x "$HOME/bin/dex-ctl" ]; then
+      ok "DeX AI: dex_daemon.py und ~/bin/dex-ctl einsatzbereit"
+    else
+      if [ "$FIX" -eq 1 ] && [ -f "$HOME/bin/dex-ctl" ]; then
+        chmod +x "$HOME/bin/dex-ctl" "$HOME/dex-agent/dex_daemon.py" 2>/dev/null || true
+        fixed "DeX AI: Ausfuehrrechte fuer dex-ctl / dex_daemon.py korrigiert"
+      else
+        fail "DeX AI: dex_daemon.py oder ~/bin/dex-ctl fehlt"
+      fi
+    fi
+
+    check_ai_endpoint 1
+
+    local hook_missing=0
+    for s in "$HOME/mobile" "$HOME/desktop"; do
+      if [ -f "$s" ] && ! grep -q "dex-ctl start" "$s"; then
+        hook_missing=1
+        if [ "$FIX" -eq 1 ]; then
+          sed -i '/proot-distro login/i "$HOME/bin/dex-ctl" start >/dev/null 2>&1 || true' "$s"
+          fixed "DeX AI: Autostart-Hook in $s ergaenzt"
+        else
+          warn "DeX AI: Autostart-Hook 'dex-ctl start' fehlt in $s"
+        fi
+      fi
+    done
+    [ "$hook_missing" -eq 0 ] && ok "DeX AI: Startskript-Hooks (mobile/desktop) geprueft"
+  else
+    ok "DeX AI Add-on nicht installiert (optionaler Check uebersprungen)"
+  fi
+}
+
+run_debian_checks() {
+  printf "${C_BOLD}=== dex-doctor: PRoot-Debian Guest Check ===${C_RST}\n"
+
+  # 1. X11 Display & Shared /tmp
+  if [ -n "${DISPLAY:-}" ]; then
+    ok "DISPLAY gesetzt (${DISPLAY})"
+  else
+    warn "DISPLAY ist nicht gesetzt (normale Shell ohne X11-Umgebung)"
+  fi
+
+  if [ -d "/tmp/.X11-unix" ] && [ -n "$(ls -A /tmp/.X11-unix 2>/dev/null)" ]; then
+    ok "Shared-tmp X11-Socket erreichbar (/tmp/.X11-unix)"
+  else
+    warn "Kein X11-Socket unter /tmp/.X11-unix (pruefe --shared-tmp oder Termux:X11)"
+  fi
+
+  # 2. Verwaiste Chromium Singleton-Locks (alle Profile)
+  local stale_locks=()
+  for lock in /root/.config/chromium*/Singleton* "$HOME"/.config/chromium*/Singleton*; do
+    [ -e "$lock" ] || [ -L "$lock" ] && stale_locks+=("$lock")
+  done
+  if [ "${#stale_locks[@]}" -gt 0 ]; then
+    if ! pgrep -x chromium >/dev/null 2>&1; then
+      if [ "$FIX" -eq 1 ]; then
+        rm -f "${stale_locks[@]}"
+        fixed "Verwaiste Chromium Singleton-Locks bereinigt (${#stale_locks[@]} Dateien)"
+      else
+        fail "Verwaiste Chromium Singleton-Locks blockieren Browser-Start (${#stale_locks[@]} Dateien)"
+      fi
+    else
+      ok "Chromium laeuft aktiv (Singleton-Locks gueltig)"
+    fi
+  else
+    ok "Keine blockierenden Chromium Singleton-Locks vorhanden"
+  fi
+
+  # 3. Alle Desktop-Starter & XFCE Trust pruefen
+  local desk_checked=0
+  for desk_file in /root/Desktop/*.desktop; do
+    [ -f "$desk_file" ] || continue
+    desk_checked=1
+    if [ -x "$desk_file" ]; then
+      ok "Desktop-Starter '$(basename "$desk_file")' ausfuehrbar"
+    else
+      if [ "$FIX" -eq 1 ]; then
+        chmod +x "$desk_file"
+        if command -v gio >/dev/null 2>&1; then
+          local sha
+          sha=$(sha256sum "$desk_file" | awk '{print $1}')
+          gio set -t string "$desk_file" metadata::xfce-exe-checksum "$sha" 2>/dev/null || true
+          gio set -t string "$desk_file" metadata::trusted true 2>/dev/null || true
+        fi
+        fixed "Desktop-Starter '$(basename "$desk_file")' +x und XFCE-Trust gesetzt"
+      else
+        warn "Desktop-Starter '$(basename "$desk_file")' ist nicht ausfuehrbar"
+      fi
+    fi
+  done
+  [ "$desk_checked" -eq 0 ] && ok "Keine benutzerdefinierten Desktop-Starter unter /root/Desktop"
+
+  # 4. dpkg-Konsistenz & Paket-Hygiene
+  if [ -z "$(dpkg --audit 2>/dev/null)" ]; then
+    ok "dpkg Paketdatenbank konsistent"
+  else
+    if [ "$FIX" -eq 1 ]; then
+      dpkg --configure -a
+      fixed "Unterbrochene dpkg-Konfiguration repariert"
+    else
+      fail "dpkg meldet unvollstaendig konfigurierte Pakete (dpkg --audit)"
+    fi
+  fi
+
+  if dpkg-query -W -f='${Status}' kdeconnect 2>/dev/null | grep -q "install ok installed"; then
+    warn "kdeconnect ist installiert (unnoetiger D-Bus-/RAM-Ballast)"
+  else
+    ok "Paket-Hygiene: kein kdeconnect-Ballast"
+  fi
+
+  if dpkg-query -W -f='${Status}' kdenlive 2>/dev/null | grep -q "install ok installed"; then
+    local manual_pkgs
+    manual_pkgs=$(apt-mark showmanual 2>/dev/null || true)
+    if echo "$manual_pkgs" | grep -qx "breeze-icon-theme" && echo "$manual_pkgs" | grep -qx "kio"; then
+      ok "Kdenlive UI-Abhaengigkeiten (breeze-icon-theme, kio) gepinnt"
+    else
+      if [ "$FIX" -eq 1 ]; then
+        apt-mark manual kdenlive breeze-icon-theme kio >/dev/null 2>&1 || true
+        fixed "Kdenlive samt breeze-icon-theme und kio auf manual gepinnt"
+      else
+        warn "Kdenlive-Icons nicht gepinnt (autoremove-Risiko)"
+      fi
+    fi
+  fi
+
+  # 5. Optionales Add-on: DeX AI
+  if [ -x "/usr/local/bin/dex-ai-ui" ] || [ -x "/usr/local/bin/dex-ctl" ]; then
+    check_ai_endpoint 0
+
+    if [ -x "/usr/local/bin/dex-ctl" ]; then
+      ok "DeX AI: Debian-Wrapper /usr/local/bin/dex-ctl vorhanden"
+    else
+      if [ "$FIX" -eq 1 ]; then
+        cat << 'WEOF' > /usr/local/bin/dex-ctl
+#!/usr/bin/env bash
+case "${1:-status}" in
+  status) curl -s http://127.0.0.1:8080/dex/status && echo ;;
+  wake)   curl -s -X POST http://127.0.0.1:8080/dex/wake && echo ;;
+  sleep)  curl -s -X POST http://127.0.0.1:8080/dex/sleep && echo ;;
+  *)      echo "Nutzung: dex-ctl {status|wake|sleep}"; exit 1 ;;
+esac
+WEOF
+        chmod +x /usr/local/bin/dex-ctl
+        fixed "DeX AI: /usr/local/bin/dex-ctl erstellt"
+      else
+        fail "DeX AI: /usr/local/bin/dex-ctl fehlt"
+      fi
+    fi
+
+    if [ -x "/usr/local/bin/dex-ai-ui" ]; then
+      if grep -q "dex/wake" /usr/local/bin/dex-ai-ui; then
+        ok "DeX AI: Wake-Hook in /usr/local/bin/dex-ai-ui aktiv"
+      else
+        if [ "$FIX" -eq 1 ]; then
+          sed -i '/^exec chromium/i curl -sf -X POST http://127.0.0.1:8080/dex/wake >/dev/null || true' /usr/local/bin/dex-ai-ui
+          fixed "DeX AI: Wake-Hook in /usr/local/bin/dex-ai-ui ergaenzt"
+        else
+          warn "DeX AI: Wake-Hook fehlt in /usr/local/bin/dex-ai-ui"
+        fi
+      fi
+    fi
+  else
+    ok "DeX AI Add-on nicht installiert (optionaler Check uebersprungen)"
+  fi
+}
+
+if [ -f "/etc/debian_version" ]; then
+  run_debian_checks
+else
+  run_termux_checks
+fi
+
+echo "----------------------------------------"
+printf "Ergebnis: ${C_OK}%d OK${C_RST} | ${C_FIX}%d Fixed${C_RST} | ${C_WARN}%d Warnungen${C_RST} | ${C_FAIL}%d Fehler${C_RST}\n" \
+  "$PASS_CNT" "$FIX_CNT" "$WARN_CNT" "$FAIL_CNT"
+
+[ "$FAIL_CNT" -eq 0 ]
